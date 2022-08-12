@@ -6,17 +6,25 @@ let activeEffect = null;
 
 const bucket = new Set();
 
+function track() {
+  if (activeEffect) {
+    bucket.add(activeEffect);
+  }
+}
+
+function trigger() {
+  bucket.forEach((fn) => fn());
+}
+
 const obj = new Proxy(data, {
   get(target, key) {
-    if (activeEffect) {
-      bucket.add(activeEffect);
-    }
+    track();
     return target[key];
   },
   set(target, key, newValue) {
     // eslint-disable-next-line no-param-reassign
     target[key] = newValue;
-    bucket.forEach((fn) => fn());
+    trigger();
     return true;
   },
 });
